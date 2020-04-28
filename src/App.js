@@ -30,7 +30,6 @@ class App extends Component {
                         </Route>
                         <Route path="/signup/seller">
                             <NavbarComponent />
-
                             <SignupSeller />
                         </Route>
                         <Route path="/login">
