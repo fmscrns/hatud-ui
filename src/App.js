@@ -1,47 +1,63 @@
-import React, { Component } from 'react';
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import NavbarComponent from './NavbarComponent';
+import React from 'react';
+import {
+    BrowserRouter as Router,
+    Switch,
+    Route,
+    Redirect,
+} from "react-router-dom";
+import Cookies from 'universal-cookie';
 import Welcome from './Welcome';
 import Signup from './Signup';
-import SignupBuyer from './SignupBuyer';
-import SignupSeller from './SignupSeller';
 import Login from './Login';
+import Home from './Home';
+import Account from './Account';
+import Logout from './Logout';
 
-class App extends Component {
-    render() {
-        return (
-            <main>
-                <Router>
-                    <Switch>
-                        <Route exact path="/">
-                            <NavbarComponent />
 
-                            <Welcome />
-                        </Route>
-                        <Route exact path="/signup">
-                            <NavbarComponent />
+function App () {
+    return (
+        <main>
+            <Router>
+                <Switch>
+                    <PublicRoute exact path="/" render={props => <Welcome {...props} />} />
+                    <PublicRoute path="/signup" render={props => <Signup {...props} />} />
+                    <PublicRoute path="/login" render={props => <Login {...props} />} />
+                    {/* <Route path="/login/:next" render={props => <Login {...props} />} /> */}
+                    <PrivateRoute path="/home">
+                        <Home />
+                    </PrivateRoute>
+                    <PrivateRoute path="/account">
+                        <Account />
+                    </PrivateRoute>
+                    <PrivateRoute path="/logout">
+                        <Logout />
+                    </PrivateRoute>
+                </Switch>
+            </Router>
+        </main>
+    )
+}
 
-                            <Signup />
-                        </Route>
-                        <Route path="/signup/buyer">
-                            <NavbarComponent />
+function PublicRoute({ ...rest }) {
+        const cookies = new Cookies();
 
-                            <SignupBuyer />
-                        </Route>
-                        <Route path="/signup/seller">
-                            <NavbarComponent />
-                            <SignupSeller />
-                        </Route>
-                        <Route path="/login">
-                            <NavbarComponent />
+        if (cookies.get('hatud_auth_token')) {
+            return (
+                <Redirect to={"/home"} />
+            );
+        } else {
+            return (
+                <Route {...rest} />
+            );
+        }
+}
 
-                            <Login />
-                        </Route>
-                    </Switch>
-                </Router>
-            </main>
-        )
-    }
+function PrivateRoute({ children, ...rest }) {
+    const cookies = new Cookies();
+
+    return (
+        <Route {...rest} render={({ location }) => cookies.get('hatud_auth_token') ? (children) : (<Redirect to={{ pathname: "/login", state: { from: location } }} />)} />
+    );
 }
 
 export default App;
