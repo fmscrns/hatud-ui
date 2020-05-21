@@ -1,68 +1,66 @@
 import React from "react";
-import { Formik, useField, Form } from 'formik';
-import * as Yup from 'yup';
-import Cookies from 'universal-cookie';
-import { Container, Row, Col, Button, Badge, FormControl } from 'react-bootstrap';
-import NavbarComponent from './NavbarComponent';
+import {
+   useHistory,
+   Link,
+} from "react-router-dom";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import Cookies from "universal-cookie";
+import {
+   Container,
+   Row,
+   Col,
+   Button
+} from "react-bootstrap";
+import FormFieldInput from "./utils/FormFieldInput";
 
-
-const FormFieldInput = ({ label, ...props }) => {
-   const [field, meta] = useField(props);
-
-   return (
-         <Container className="welcome-action-form-text-input">
-            <h6 htmlFor={props.id || props.name}>{label}</h6>
-            <FormControl {...field} {...props} isInvalid={meta.touched && meta.error && true }/>
-            {meta.touched && meta.error ? (<Badge variant="danger">{meta.error}</Badge>) : <br />}
-         </Container>
-   )
-}
 
 function Signup() {
+   let history = useHistory();
+
    return (
       <>
-         <NavbarComponent />
          <Formik
             initialValues = {{
-               first_name: '',
-               last_name: '',
-               address: '',
-               contact_no: '',
-               username: '',
-               email: '',
-               password: '',
-               confirm_password: '',
+               first_name: "",
+               last_name: "",
+               address: "",
+               contact_no: "",
+               username: "",
+               email: "",
+               password: "",
+               confirm_password: "",
             }}
             
             validationSchema = {Yup.object({
                first_name: Yup.string()
-                  .min(2, 'Must be at least 2 characters')
-                  .max(15, ' Must be 15 characters or less')
-                  .required('Required'),
+                  .min(2, "Must be at least 2 characters")
+                  .max(15, " Must be 15 characters or less")
+                  .required("Required"),
                last_name: Yup.string()
-                  .min(2, 'Must be at least 2 characters')
-                  .max(15, ' Must be 15 characters or less')
-                  .required('Required'),
+                  .min(2, "Must be at least 2 characters")
+                  .max(15, " Must be 15 characters or less")
+                  .required("Required"),
                address: Yup.string()
-                  .required('Required'),
+                  .required("Required"),
                contact_no: Yup.string()
-                  .min(11, 'Must be 11 characters')
-                  .max(11, ' Must be 11 characters')
-                  .required('Required'),
+                  .min(11, "Must be 11 characters")
+                  .max(11, " Must be 11 characters")
+                  .required("Required"),
                username: Yup.string()
-                  .min(2, 'Must be at least 2 characters')
-                  .max(15, ' Must be 15 characters or less')
-                  .required('Required'),
+                  .min(2, "Must be at least 2 characters")
+                  .max(15, " Must be 15 characters or less")
+                  .required("Required"),
                email: Yup.string()
-                  .email('Invalid email address')
-                  .required('Required'),
+                  .email("Invalid email address")
+                  .required("Required"),
                password: Yup.string()
-                  .required('Required'),
+                  .required("Required"),
                confirm_password: Yup.string()
-                  .test('passwords-match', 'Passwords must match', function(value) {
+                  .test("passwords-match", "Passwords must match", function(value) {
                      return this.parent.password === value;
                   })
-                  .required('Required')
+                  .required("Required")
             })}
 
             onSubmit = {(values, { setSubmitting, resetForm }) => {
@@ -72,7 +70,7 @@ function Signup() {
                   myHeaders.append("Content-Type", "application/json");
 
                   const requestOptions = {
-                     method: 'POST',
+                     method: "POST",
                      headers: myHeaders,
                      body: JSON.stringify(values, null, 2),
                   };
@@ -81,15 +79,16 @@ function Signup() {
                   .then(response => response.json())
                   .then(result => {
                      if (result.status === "success") {
-                        cookies.set('hatud_login_key', result.Authorization, { path: '/' });
-                        alert(cookies.get('hatud_login_key'));
-                        resetForm();
-                        setSubmitting(false);
+                        cookies.set("hatud_auth_token", result.Authorization, { path: "/" });
+                        history.push("/home")
                      } else {
-                        alert(result.message)
                         resetForm();
                         setSubmitting(false);
+                        alert(result.message);
                      }
+                  })
+                  .catch((error) => {
+                     alert(error);
                   });   
                }, 3000)
             }}
@@ -116,9 +115,18 @@ function Signup() {
                      <FormFieldInput label="Password" name="password" type="password" placeholder="Password" />
                      <FormFieldInput label="Confirm Password" name="confirm_password" type="password" placeholder="Confirm Password" />
                      <br />
-                     <Container style={{ display: "flex", justifyContent: "flex-end" }}>
-                        <Button variant="primary" type="submit">{props.isSubmitting ? 'Loading...' : 'Signup'}</Button>
-                     </Container>
+                     <Row>
+                        <Col>
+                           <Container style={{ display: "flex", justifyContent: "flex-start" }}>
+                              Already have an account?&nbsp;<Link to="/login">Log in here</Link>
+                           </Container>
+                        </Col>
+                        <Col>
+                           <Container style={{ display: "flex", justifyContent: "flex-end" }}>
+                              <Button variant="primary" type="submit">{props.isSubmitting ? "Loading..." : "Signup"}</Button>
+                           </Container>
+                        </Col>
+                     </Row>
                   </Form>
                </Container>
                )
@@ -128,4 +136,4 @@ function Signup() {
    );
 }
 
-export default Signup
+export default Signup;

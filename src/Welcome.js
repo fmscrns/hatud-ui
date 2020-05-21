@@ -1,12 +1,10 @@
-import React from 'react';
-import { Container, Row, Col, Button } from 'react-bootstrap';
-import NavbarComponent from './NavbarComponent';
+import React from "react";
+import { Container, Row, Col, Button } from "react-bootstrap";
+
 
 function Welcome() {
    return (
       <>
-         <NavbarComponent />
-
          <Container fluid>
             <Row>
                <Col>

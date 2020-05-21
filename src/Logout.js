@@ -1,10 +1,18 @@
 import React from "react";
 import Cookies from "universal-cookie";
 import { Redirect } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setLoggedIn } from "./reducers/loggedInSlice";
 
-export default function Logout() {
-   const cookie = new Cookies();
 
-   cookie.remove("hatud_auth_token");
-   return <Redirect to="/login" />
+function Logout() {
+   const cookies = new Cookies();
+   const dispatch = useDispatch();
+
+   cookies.remove("hatud_auth_token");
+   dispatch(setLoggedIn(false));
+
+   return <Redirect to="login" />;
 }
+
+export default Logout;

@@ -1,12 +1,14 @@
 import React from "react";
+// import NavbarComponent from "./utils/NavbarComponent";
 
-import NavbarComponent from "./NavbarComponent"
 
-export default function Account() {
+function Account() {
    return (
       <>
-         <NavbarComponent />
+         {/* <NavbarComponent /> */}
          <h1>Account!</h1>
       </>
    );
 }
+
+export default Account;

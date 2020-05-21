@@ -1,26 +1,25 @@
 import React from "react";
-import { useHistory } from "react-router-dom";
-import {
-   Formik,
-   Form,
-   useField,
-} from 'formik';
-import * as Yup from 'yup';
-import Cookies from 'universal-cookie';
+import { useDispatch } from "react-redux";
+import { useHistory, Link } from "react-router-dom";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import Cookies from "universal-cookie";
 import {
    Container,
    Button,
-   Badge,
-   FormControl,
-   FormCheck,
-} from 'react-bootstrap';
-import NavbarComponent from "./NavbarComponent";
+   Row,
+   Col,
+} from "react-bootstrap";
+import { createAlertMessage } from "./reducers/alert/alertMessageSlice";
+import { setDisplayAlert } from "./reducers/alert/displayAlertSlice";
+import { setLoggedIn } from "./reducers/loggedInSlice";
+import FormFieldInput from "./utils/FormFieldInput";
 
 
-export default function Login(props) {
+function Login(props) {
+   const dispatch = useDispatch();
    let history = useHistory();
    let nextPage = ""
-
    try {
       nextPage = props.location.state.from.pathname;
    } catch (TypeError) {
@@ -29,20 +28,17 @@ export default function Login(props) {
 
    return (
       <>
-         <NavbarComponent />
          <Formik
             initialValues = {{
-               username_or_email: '',
-               password: '',
-               remember: false,
+               username_or_email: "",
+               password: "",
             }}
             
             validationSchema = {Yup.object({
                username_or_email: Yup.string()
-                  .required('Required'),
+                  .required("Required"),
                password: Yup.string()
-                  .required('Required'),
-               remember: Yup.boolean(),
+                  .required("Required"),
             })}
    
             onSubmit = {(values, { setSubmitting, resetForm }) => {
@@ -52,42 +48,61 @@ export default function Login(props) {
                   myHeaders.append("Content-Type", "application/json");
    
                   const requestOptions = {
-                     method: 'POST',
+                     method: "POST",
                      headers: myHeaders,
                      body: JSON.stringify(values, null, 2),
+                     redirect: "follow"
                   };
    
                   fetch("http://127.0.0.1:5000/seller/login", requestOptions)
                   .then(response => response.json())
                   .then(result => {
                      if (result.status === "success") {
-                        cookies.set('hatud_auth_token', result.Authorization, { path: '/' });
+                        cookies.set("hatud_auth_token", result.Authorization, { path: "/" });
+                        dispatch(setLoggedIn(true));
                         history.push(nextPage)
                      } else {
-                        alert(result.message)
                         resetForm();
                         setSubmitting(false);
+                        dispatch(createAlertMessage(result.message));
+                        dispatch(setDisplayAlert(true));
                      }
-                  });   
-               }, 3000)
+                  })
+                  .catch((error) => {
+                     resetForm();
+                     setSubmitting(false);
+                     dispatch(createAlertMessage(error));
+                     dispatch(setDisplayAlert(true));
+                  });
+               }, 3000);
             }}
          >
             {props => (
-               <Container className="welcome-action-cont">
-                  <Form>
-                     <Container>
-                        <h1>Log in</h1>
-                     </Container>
-                     <br />
-                     <FormFieldInput label="Username or Email" name="username_or_email" type="text" placeholder="Username or Email" />
-                     <FormFieldInput label="Password" name="password" type="password" placeholder="Password" />
-                     <FormFieldCheckbox label="Remember me" name="remember" type="checkbox" />
-                     <br />
-                     <Container style={{ display: "flex", justifyContent: "flex-end" }}>
-                        <Button variant="primary" type="submit">{props.isSubmitting ? 'Loading...' : 'Log in'}</Button>
-                     </Container>
-                  </Form>
-               </Container>
+               <>
+                  <Container className="welcome-action-cont">
+                     <Form>
+                        <Container>
+                           <h1>Log in</h1>
+                        </Container>
+                        <br />
+                        <FormFieldInput label="Username or Email" name="username_or_email" type="text" placeholder="Username or Email" />
+                        <FormFieldInput label="Password" name="password" type="password" placeholder="Password" />
+                        <br />
+                        <Row>
+                           <Col>
+                              <Container style={{ display: "flex", justifyContent: "flex-start" }}>
+                                 New to Hatud?&nbsp;<Link to="/signup">Sign up here</Link>
+                              </Container>
+                           </Col>
+                           <Col>
+                              <Container style={{ display: "flex", justifyContent: "flex-end" }}>
+                                 <Button variant="primary" type="submit">{props.isSubmitting ? "Loading..." : "Log in"}</Button>
+                              </Container>
+                           </Col>
+                        </Row>
+                     </Form>
+                  </Container>
+               </>
                )
             }
          </Formik>
@@ -95,25 +110,4 @@ export default function Login(props) {
    );
 }
 
-function FormFieldInput({ label, ...props }) {
-   const [field, meta] = useField(props);
-
-   return (
-      <Container className="welcome-action-form-text-input">
-         <h6 htmlFor={props.id || props.name}>{label}</h6>
-         <FormControl {...field} {...props} isInvalid={meta.touched && meta.error && true }/>
-         {meta.touched && meta.error ? (<Badge variant="danger">{meta.error}</Badge>) : <br />}
-      </Container>
-   )
-}
-
-function FormFieldCheckbox({ label, ...props }) {
-   const [field, meta] = useField(props, 'checkbox');
-
-   return (
-      <Container className="welcome-action-form-text-input">
-         <FormCheck type="checkbox" {...field} {...props} label={label}/>
-         {meta.touched && meta.error ? (<Badge variant="danger">{meta.error}</Badge>) : <br />}
-      </Container>
-   )
-}
+export default Login;
